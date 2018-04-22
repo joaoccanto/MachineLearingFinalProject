@@ -1,3 +1,5 @@
+from __future__ import division
+
 import numpy as np
 import sys
 
@@ -34,15 +36,24 @@ class LR(object):
         cost = self.cost_function(data, label)
         change_cost = 1
         i = 0
+        print "training accuracy\niteration,cost,correct,total,ratio"
         while change_cost > self.conv:
             old_cost = cost
             dw = self.logistic_grad(data, label)
             self.w -= (self.eta * dw.T)
             cost = self.cost_function(data, label)
             change_cost = old_cost - cost
+            predictions = self.predict(data)
             #print cost
             i = i +1
-        print i, change_cost
+
+            
+            count = 0
+            for p, l in zip(predictions.T, label):
+                if p == l:
+                    count += 1
+            print "{},{},{},{},{}".format(i,cost,count, len(data),count/len(data))
+        print
         return
     def predict(self, data):
         y_hat = self.sigmoid(self.net_input(data))
@@ -55,10 +66,21 @@ class LR(object):
             index += 1
         return predictions
         
+        
+def print_results(heading, predictions, label, cities, num_of_data):
+    count = 0
+    print heading+"\ncity,prediction,truth,correct"
+    for p, l, c in zip(predictions.T, label, cities):
+        print "{},{},{},{}".format(c,p[0],l[0],p[0]==l[0])
+        if p == l:
+            count = count + 1
+            
+    print "\nAccuracy\ncorrect,total,ratio\n{},{},{}\n".format(count,num_of_data,count/num_of_data)
+    return
 
 def main():
 
-    sys.stdout = open('file', 'w')
+    sys.stdout = open('file.csv', 'w')
 
     data_file = 'data_set.txt'
     data_set, label, cities = load_data_set(data_file)
@@ -76,14 +98,15 @@ def main():
     predictions = logistic_red_sample_size.predict(t_data)
     num_of_data = len(t_data)
 
-    count = 0
+#    count = 0
 
-    print "reduced sample space"
-    for p, l, c in zip(predictions.T, t_label, t_cities):
-        print c , "\t" ,p , "\t", l
-        if p == l:
-            count = count + 1
-    print count, num_of_data
+#    print "reduced sample space"
+#    for p, l, c in zip(predictions.T, t_label, t_cities):
+#        print c , "\t" ,p[0] , "\t", l[0]
+#        if p == l:
+#            count = count + 1
+#    print count, num_of_data
+    print_results("reduced sample space", predictions, t_label, t_cities, num_of_data)
 ###########################################################
     data_reduced_feature_space = decrease_feature_space(data_set)
     new_label = lr_label(label)
@@ -98,15 +121,16 @@ def main():
     predictions = logistic_red_sample_size.predict(t_data)
     num_of_data = len(t_data)
 
-    count = 0
+#    count = 0
 
-    print "reduced feature space"
-    for p, l, c in zip(predictions.T, t_label, t_city):
-        print c , "\t" ,p , "\t", l
-        if p == l:
-            count = count + 1
-    print count, num_of_data
+#    print "reduced feature space"
+#    for p, l, c in zip(predictions.T, t_label, t_city):
+#        print c , "\t" ,p[0] , "\t", l[0]
+#        if p == l:
+#            count = count + 1
+#    print count, num_of_data
 
+    print_results("reduced feature space", predictions, t_label, t_city, num_of_data)
     ############################
     double_reduced_data= decrease_feature_space(data_reduced_feature_space)
     double_reduced_data, double_reduced_label, double_reduced_cities= decrease_sample_size(double_reduced_data, label, cities)
@@ -121,14 +145,16 @@ def main():
     predictions = logistic_red_sample_size.predict(t_data)
     num_of_data = len(t_data)
 
-    count = 0
+#    count = 0
 
-    print "reduced sample and feature space"
-    for p, l, c in zip(predictions.T, t_label, t_city):
-        print c , "\t" ,p , "\t", l
-        if p == l:
-            count = count + 1
-    print count, num_of_data
+#    print "reduced sample and feature space"
+#    for p, l, c in zip(predictions.T, t_label, t_city):
+#        print c , "\t" ,p[0] , "\t", l[0]
+#        if p == l:
+#            count = count + 1
+#    print count, num_of_data
+    
+    print_results("reduced sample and feature space", predictions, t_label, t_city, num_of_data)
 
 def load_data_set(data_file):
     data_set = []
@@ -203,7 +229,7 @@ def training_sets(data, label, city):
     t_cities = []
     num_of_data = len(data)
 
-    for i in range(0, (num_of_data - num_of_data / 10)):
+    for i in range(0, (num_of_data - num_of_data // 10)):
         t_data.append(data[i])
         t_label.append(label[i])
         t_cities.append(city[i])
@@ -214,7 +240,7 @@ def test_sets(data, label, city):
     t_label = []
     t_cities = []
     num_of_data = len(data)
-    for i in range(num_of_data - num_of_data / 10, num_of_data):
+    for i in range(num_of_data - num_of_data // 10, num_of_data):
         t_data.append(data[i])
         t_label.append(label[i])
         t_cities.append(city[i])
